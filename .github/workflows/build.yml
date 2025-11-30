@@ -1,0 +1,38 @@
+name: Build Nim for aarch64 Linux
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build-nim-aarch64:
+    runs-on: ubuntu-24.04-arm # ← ARM64 ランナー
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl git build-essential
+
+      - name: Install Nim via choosenim
+        run: |
+          curl https://nim-lang.org/choosenim/init.sh -sSf > /tmp/init.sh
+          sh /tmp/init.sh -y
+          echo "$HOME/.nimble/bin" >> $GITHUB_PATH
+
+      - name: Show Nim version
+        run: nim -v
+
+      - name: Build aarch64 binary
+        run: |
+          nim c -d:release -o:rfserve_batch src/rfserve_batch.nim
+          file rfserve_batch || ls -l
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: rfserve_batch-aarch64
+          path: rfserve_batch

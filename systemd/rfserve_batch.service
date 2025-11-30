@@ -1,0 +1,14 @@
+[Unit]
+Description=Rfserve Batch
+Wants=network-online.target
+After=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/rfserve_batch
+EnvironmentFile=/etc/rfserve_batch/.env
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
