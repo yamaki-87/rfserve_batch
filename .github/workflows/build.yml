@@ -17,11 +17,14 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y curl git build-essential
 
-      - name: Install Nim via choosenim
+      - name: Install Nim (aarch64 tarball)
         run: |
-          curl https://nim-lang.org/choosenim/init.sh -sSf > /tmp/init.sh
-          sh /tmp/init.sh -y
-          echo "$HOME/.nimble/bin" >> $GITHUB_PATH
+          NIM_VERSION=2.2.4
+          curl -L "https://nim-lang.org/download/nim-$NIM_VERSION-linux_arm64.tar.xz" -o nim.tar.xz
+          mkdir -p $HOME/.local
+          tar -xf nim.tar.xz -C $HOME/.local
+          # 展開されるディレクトリ名に合わせてパス通す
+          echo "$HOME/.local/nim-$NIM_VERSION/bin" >> $GITHUB_PATH
 
       - name: Show Nim version
         run: nim -v
