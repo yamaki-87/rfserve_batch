@@ -1,38 +1,43 @@
-name: Build Nim for aarch64 Linux
+name: Build for Linux Aarch64
 
 on:
   push:
-    branches: [main]
+    branches: ["main"]
   pull_request:
 
 jobs:
-  build-nim-aarch64:
-    runs-on: ubuntu-24.04-arm # ← ARM64 ランナー
+  build-arm64:
+    runs-on: ubuntu-latest
 
     steps:
+      # 1. ソースコードのチェックアウト
       - uses: actions/checkout@v4
 
-      - name: Install dependencies
+      # 2. Nimのセットアップ (キャッシュも効くので高速です)
+      - uses: jiro4989/setup-nim-action@v2
+        with:
+          nim-version: "stable"
+
+      # 3. Aarch64用クロスコンパイラのインストール
+      # ここが重要です。UbuntuランナーにARM64用のGCCを入れます。
+      - name: Install Aarch64 Cross-Compiler
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl git build-essential
+          sudo apt-get install -y gcc-aarch64-linux-gnu
 
-      - name: Setup Nim Environment
-        uses: jiro4989/setup-nim-action@v2
-        with:
-          # 使用したいNimのバージョンを指定します
-          nim-version: "2.2.4"
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Show Nim version
-        run: nim -v
+      # 4. 依存パッケージのインストール (nimbleを使っている場合)
+      - name: Install dependencies
+        run: nimble install -d
 
-      - name: Build aarch64 binary
-        run: |
-          nim c -d:release -o:rfserve_batch src/rfserve_batch.nim
-          file rfserve_batch || ls -l
+      # 5. コンパイル実行
+      # nim.cfg があるため、コマンドはシンプルになります
+      - name: Build
+        run: nim c -d:release --cpu:arm64 --os:linux src/rfserve_batch.nim
 
-      - name: Upload artifact
+      # 6. 成果物のアップロード
+      # ビルドされたバイナリをダウンロードできるようにします
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: rfserve_batch-aarch64
-          path: rfserve_batch
+          name: rfserve_batch.nim
+          path: src/main # コンパイルされたバイナリのパス
