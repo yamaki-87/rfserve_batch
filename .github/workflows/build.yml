@@ -40,4 +40,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: rfserve_batch.nim
-          path: src/main # コンパイルされたバイナリのパス
+          path: src/rfserve_batch # コンパイルされたバイナリのパス
